@@ -1,0 +1,15 @@
+windtunnel configuration\tasks.o: ..\Middlewares\Third_Party\FreeRTOS\Source\tasks.c
+windtunnel configuration\tasks.o: D:\MDK\ARM\ARMCC\Bin\..\include\stdlib.h
+windtunnel configuration\tasks.o: D:\MDK\ARM\ARMCC\Bin\..\include\string.h
+windtunnel configuration\tasks.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h
+windtunnel configuration\tasks.o: D:\MDK\ARM\ARMCC\Bin\..\include\stddef.h
+windtunnel configuration\tasks.o: D:\MDK\ARM\ARMCC\Bin\..\include\stdint.h
+windtunnel configuration\tasks.o: ..\Inc\FreeRTOSConfig.h
+windtunnel configuration\tasks.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h
+windtunnel configuration\tasks.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h
+windtunnel configuration\tasks.o: ..\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM4F\portmacro.h
+windtunnel configuration\tasks.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h
+windtunnel configuration\tasks.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h
+windtunnel configuration\tasks.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h
+windtunnel configuration\tasks.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h
+windtunnel configuration\tasks.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\StackMacros.h

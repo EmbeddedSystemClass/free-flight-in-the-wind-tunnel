@@ -1,0 +1,14 @@
+windtunnel configuration\queue.o: ..\Middlewares\Third_Party\FreeRTOS\Source\queue.c
+windtunnel configuration\queue.o: D:\MDK\ARM\ARMCC\Bin\..\include\stdlib.h
+windtunnel configuration\queue.o: D:\MDK\ARM\ARMCC\Bin\..\include\string.h
+windtunnel configuration\queue.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h
+windtunnel configuration\queue.o: D:\MDK\ARM\ARMCC\Bin\..\include\stddef.h
+windtunnel configuration\queue.o: D:\MDK\ARM\ARMCC\Bin\..\include\stdint.h
+windtunnel configuration\queue.o: ..\Inc\FreeRTOSConfig.h
+windtunnel configuration\queue.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h
+windtunnel configuration\queue.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h
+windtunnel configuration\queue.o: ..\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM4F\portmacro.h
+windtunnel configuration\queue.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h
+windtunnel configuration\queue.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h
+windtunnel configuration\queue.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h
+windtunnel configuration\queue.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h

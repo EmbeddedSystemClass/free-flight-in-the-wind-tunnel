@@ -1,0 +1,12 @@
+windtunnel configuration\croutine.o: ..\Middlewares\Third_Party\FreeRTOS\Source\croutine.c
+windtunnel configuration\croutine.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h
+windtunnel configuration\croutine.o: D:\MDK\ARM\ARMCC\Bin\..\include\stddef.h
+windtunnel configuration\croutine.o: D:\MDK\ARM\ARMCC\Bin\..\include\stdint.h
+windtunnel configuration\croutine.o: ..\Inc\FreeRTOSConfig.h
+windtunnel configuration\croutine.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h
+windtunnel configuration\croutine.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h
+windtunnel configuration\croutine.o: ..\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM4F\portmacro.h
+windtunnel configuration\croutine.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h
+windtunnel configuration\croutine.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h
+windtunnel configuration\croutine.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h
+windtunnel configuration\croutine.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\croutine.h

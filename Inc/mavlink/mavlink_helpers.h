@@ -10,7 +10,7 @@
 #define MAVLINK_HELPER
 #endif
 
-#define MAVLINK_USE_CONVENIENCE_FUNCTIONS 1
+//#define MAVLINK_USE_CONVENIENCE_FUNCTIONS 1
 //#define MAVLINK_SEND_UART_BYTES comm_send_ch2
 //void comm_send_ch2(mavlink_channel_t chan, const uint8_t *buf, uint16_t len);
 

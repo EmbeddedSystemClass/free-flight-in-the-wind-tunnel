@@ -1,0 +1,11 @@
+windtunnel configuration\port.o: ..\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM4F\port.c
+windtunnel configuration\port.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h
+windtunnel configuration\port.o: D:\MDK\ARM\ARMCC\Bin\..\include\stddef.h
+windtunnel configuration\port.o: D:\MDK\ARM\ARMCC\Bin\..\include\stdint.h
+windtunnel configuration\port.o: ..\Inc\FreeRTOSConfig.h
+windtunnel configuration\port.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h
+windtunnel configuration\port.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h
+windtunnel configuration\port.o: ..\Middlewares\Third_Party\FreeRTOS\Source\portable\RVDS\ARM_CM4F\portmacro.h
+windtunnel configuration\port.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h
+windtunnel configuration\port.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h
+windtunnel configuration\port.o: ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h
