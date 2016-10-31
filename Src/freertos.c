@@ -36,27 +36,22 @@
 #include "task.h"
 #include "cmsis_os.h"
 
-/* USER CODE BEGIN Includes */     
+/* USER CODE BEGIN Includes */   
 #include "include.h"
-void comm_send_ch(int chan, uint8_t ch);
-#include "mavlink.h"
 /* USER CODE END Includes */
 
 /* Variables -----------------------------------------------------------------*/
 osThreadId defaultTaskHandle;
 
 /* USER CODE BEGIN Variables */
-osMessageQId xQueue1 = NULL;
-osMessageQId xQueue2 = NULL;
-osMessageQId xQueue3 = NULL;
-//osMessageQId xQueue4 = NULL;
-
+osMessageQId msgQueueAngle = NULL;
+osMessageQId msgQueueRpm = NULL;
+osMessageQId msgInQueueHandle = NULL;
 
 osSemaphoreId msgOutBinarySemHandle;
 
 EventGroupHandle_t xCreatedEventGroup = NULL;
 
-uint16_t b=0;
 uint8_t pingpang[256];
 uint8_t pingpang_idx;
 /* USER CODE END Variables */
@@ -67,10 +62,10 @@ void StartDefaultTask(void const * argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* USER CODE BEGIN FunctionPrototypes */
-void AS5600_Thread1(void const * argument);
-void Data_Send_Thread2(void const * argument);
-void Data_Receive_Thread3(void const * argument);
-void StartMsgSend_Thread4(void const * argument);
+void AS5600Thread(void const * argument);
+void StartSampleThread(void const * argument);
+void DataReceiveThread(void const * argument);
+void StartMsgSendThread(void const * argument);
 /* USER CODE END FunctionPrototypes */
 
 /* Hook prototypes */
@@ -80,7 +75,7 @@ void StartMsgSend_Thread4(void const * argument);
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
     uint16_t Angle[8];
-	uint16_t Hall[4];
+    uint16_t Hall[4];
 	uint8_t data;
   /* USER CODE END Init */
 
@@ -100,39 +95,42 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+	osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
+	defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  osThreadDef(AS5600_Thread1,AS5600_Thread1,1,0,512);
-  osThreadCreate(osThread(AS5600_Thread1),NULL);
-  
-  osThreadDef(Data_Send_Thread2,Data_Send_Thread2,2,0,512);
-  osThreadCreate(osThread(Data_Send_Thread2),NULL);
-  
-  osThreadDef(Data_Receive_Thread3,Data_Receive_Thread3,1,0,512);
-  osThreadCreate(osThread(Data_Receive_Thread3),NULL);
-  
-   osThreadDef(StartMsgSend_Thread4, StartMsgSend_Thread4, osPriorityBelowNormal, 0, 128);
-   osThreadCreate(osThread(StartMsgSend_Thread4), NULL);
+	osThreadDef(AS5600_Thread1,AS5600Thread,1,0,512);
+	osThreadCreate(osThread(AS5600_Thread1),NULL);
+
+	osThreadDef(StartSampleThread,StartSampleThread,2,0,512);
+	osThreadCreate(osThread(StartSampleThread),NULL);
+
+	osThreadDef(Data_Receive_Thread3,DataReceiveThread,1,0,512);
+	osThreadCreate(osThread(Data_Receive_Thread3),NULL);
+
+	osThreadDef(StartMsgSendThread, StartMsgSendThread, osPriorityBelowNormal, 0, 128);
+	osThreadCreate(osThread(StartMsgSendThread), NULL);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
-   osMessageQDef(Queue1,1,Angle);
-   xQueue1=osMessageCreate(osMessageQ(Queue1),NULL);
-   
-   osMessageQDef(Queue2,1,Hall);
-   xQueue2=osMessageCreate(osMessageQ(Queue2),NULL);
-   
-   osMessageQDef(Queue3,256,data);
-   xQueue3=osMessageCreate(osMessageQ(Queue3),NULL);
+//	osMessageQDef(Queue1,1,Angle);
+//	msgQueueAngle=osMessageCreate(osMessageQ(Queue1),NULL);
+	
+	msgQueueAngle= xQueueCreate(1,sizeof(Angle));
+	
+//	osMessageQDef(Queue2,1,Hall);
+//	msgQueueRpm=osMessageCreate(osMessageQ(Queue2),NULL);
+	
+	msgQueueRpm= xQueueCreate(1,sizeof(Hall));
+	
+	osMessageQDef(Queue3,256,uint8_t);
+	msgInQueueHandle=osMessageCreate(osMessageQ(Queue3),NULL);
    
 //   osMessageQDef(Queue4, 256, uint8_t);
 //   xQueue4 = osMessageCreate(osMessageQ(Queue4), NULL);
-   
-   xCreatedEventGroup = xEventGroupCreate();
+    xCreatedEventGroup = xEventGroupCreate();
   /* USER CODE END RTOS_QUEUES */
 }
 
@@ -151,12 +149,12 @@ void StartDefaultTask(void const * argument)
 
 /* USER CODE BEGIN Application */
      
-void AS5600_Thread1(void const * argument)
+void AS5600Thread(void const * argument)
 {
 	
 	TickType_t xLastWakeTime;
 	const TickType_t xFrequency = 20;	
-	u16 Angle[8]={0};
+	uint16_t Angle[8]={0};
 	xLastWakeTime = xTaskGetTickCount();
 	for(;;)
 	{
@@ -166,106 +164,44 @@ void AS5600_Thread1(void const * argument)
 		taskEXIT_CRITICAL();
 		xTaskResumeAll();
 	    xEventGroupSetBits( xCreatedEventGroup, /* 事件标志组句柄 */
-														BIT_0 );           /* 设置bit0 */				
-		xQueueSend(xQueue1,
+														BIT_0 );           /* 设置bit0 */	
+		xQueueSend(msgQueueAngle,
 								   (void *) Angle,
 								   (TickType_t)10);
+		
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);
 	}
 }
 
-void Data_Send_Thread2(void const * argument)
+
+void StartMsgSendThread(void const * argument)
 {
-	u16 Hall[4]={0};
-	u16 Angle[8]={0};
-	uint8_t data=0;
-	EventBits_t uxBits;
-	TickType_t xLastWakeTime;
-	const TickType_t xFrequency = 100;	
-	const TickType_t xTicksToWait = 20 / portTICK_PERIOD_MS;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(10); /* 设置最大等待时间为100ms */
-	xLastWakeTime = xTaskGetTickCount();
+
+	uint8_t s;
+	/* Infinite loop */
 	for(;;)
 	{
-		uxBits=xEventGroupWaitBits(xCreatedEventGroup, /* 事件标志组句柄 */
-							         BIT_ALL,            /* 等待bit0和bit1被设置 */
-							         pdTRUE,             /* 退出前bit0和bit1被清除 */
-							         pdTRUE,             /* 设置为pdTRUE表示等待bit1和bit0都被设置*/
-							         xTicksToWait); 	 /* 等待延迟时间 */
-		if((uxBits & BIT_ALL) == BIT_ALL)
+		if(pingpang_idx != 0x00&&pingpang_idx != 0x80)
 		{
-			//printf("接收到数据\r\n");
-		
-			xQueueReceive( xQueue1,                   /* 消息队列句柄 */
-		               (void *)Angle,  		   /* 这里获取的是结构体的地址 */
-		               (TickType_t)xMaxBlockTime);/* 设置阻塞时间 */
-		
-			xQueueReceive( xQueue2,                   /* 消息队列句柄 */
-		               (void *)Hall,  		   /* 这里获取的是结构体的地址 */
-		               (TickType_t)xMaxBlockTime);/* 设置阻塞时间 */
-		
-				
-			Data_Send( Angle,Hall )	;
-		//  printf("接收到消息队列数据Hall_1= %d\r\n", Hall[0]);
-		}
-		else if (uxBits == BIT_1)
-		{
-		//	printf("未接收到霍尔数据数据");
-			
-			Data_Send( Angle,Hall )	;
-		}
-		else 
-		{
-			xQueueReceive( xQueue1,                   /* 消息队列句柄 */
-		               (void *)Angle,  		   /* 这里获取的是结构体的地址 */
-		               (TickType_t)xMaxBlockTime);/* 设置阻塞时间 */
-		//	printf("未接收到磁传感器数据");
-		//	printf("接收到消息队列数据Angle_1= %d\r\n", Angle[0]);
-			
-			Data_Send( Angle,Hall )	;
-		}
-		vTaskDelayUntil(&xLastWakeTime, xFrequency);
-	}
-}
-
-void Data_Receive_Thread3(void const * argument)
-{
-	uint8_t data=0;
-	for(;;)
-	{
-		xQueueReceive( xQueue3,                   /* 消息队列句柄 */
-		               (void *)&data,  		   /* 这里获取的是结构体的地址 */
-		               (TickType_t)-1);/* 设置阻塞时间 */
-		Data_Receive_Prepare(data);	
-					   
-	}
-		
-}
-
-void StartMsgSend_Thread4(void const * argument)
-{
-
-  uint8_t s;
-  /* Infinite loop */
-  for(;;)
-  {
-	if(pingpang_idx != 0x00&&pingpang_idx != 0x80)
-	{
-		osSemaphoreWait(msgOutBinarySemHandle,10);
-		if( pingpang_idx > 0x80)
-		{
-			s = pingpang_idx - 0x80;
-			pingpang_idx = 0x00;
-			HAL_UART_Transmit_DMA( &huart1, pingpang + 0x80 ,s);
+			osSemaphoreWait(msgOutBinarySemHandle,10);
+			if( pingpang_idx > 0x80)
+			{
+				s = pingpang_idx - 0x80;
+				pingpang_idx = 0x00;
+				HAL_UART_Transmit_DMA( &huart1, pingpang + 0x80 ,s);
+			}
+			else
+			{
+				s = pingpang_idx;
+				pingpang_idx = 0x80;
+				HAL_UART_Transmit_DMA( &huart1, pingpang, s );
+			}
 		}
 		else
 		{
-			s = pingpang_idx;
-			pingpang_idx = 0x80;
-			HAL_UART_Transmit_DMA( &huart1, pingpang, s );
+			vTaskDelay(1);
 		}
 	}
-  }
 }
 
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
@@ -273,7 +209,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	UBaseType_t uxSavedInterruptStatus;
 	static uint16_t Motor_RPM_1[4];
-	static uint16_t  value[4];
+	static uint16_t value[4];
 	static uint8_t   flag=0,flag_1=0,flag_2=0,flag_3=0;
 	static uint16_t temp_cnt1,temp_cnt1_2,temp_cnt2,temp_cnt2_2,temp_cnt3,temp_cnt3_2,temp_cnt4,temp_cnt4_2;
 	if(__HAL_TIM_GET_FLAG(htim, TIM_FLAG_CC1) != RESET)
@@ -363,43 +299,18 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 		}
 		__HAL_TIM_CLEAR_IT(htim, TIM_IT_CC4);
 	}
-	
+
 	xEventGroupSetBitsFromISR(xCreatedEventGroup, /* 事件标志组句柄 */
 														BIT_1 ,             /* 设置bit1 */
 														&xHigherPriorityTaskWoken );
 	
-	xQueueSendToFrontFromISR(xQueue2,
+	xQueueSendToFrontFromISR(msgQueueRpm,
 											(void*)Motor_RPM_1,
 												&xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 	
 }
 
-void USART1_IRQHandler(void)
-{
-  /* USER CODE BEGIN USART1_IRQn 0 */
-	uint8_t com_data;
-	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-	UBaseType_t uxSavedInterruptStatus;
-	
-  /* USER CODE END USART1_IRQn 0 */
- 
- 	HAL_UART_IRQHandler(&huart1);
-	
-	if(__HAL_UART_GET_FLAG(&huart1, UART_FLAG_RXNE))
-	{
-	__HAL_UART_CLEAR_FLAG(&huart1, UART_FLAG_RXNE);
-	com_data= huart1.Instance->DR;
-	
-	xQueueSendToFrontFromISR(xQueue3,
-											(void*)&com_data,
-												&xHigherPriorityTaskWoken);
-	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);	
-	//Data_Receive_Prepare(com_data);
-	}
-  /* USER CODE BEGIN USART1_IRQn 1 */
-  /* USER CODE END USART1_IRQn 1 */
-}
 
 void comm_send_ch(int chan, uint8_t ch)
 {
