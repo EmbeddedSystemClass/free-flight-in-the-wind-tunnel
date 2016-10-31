@@ -239,8 +239,8 @@ void AS5600_Angle_Read()
 	IIC_Read_nByte_3(AS5600_ADDR,AS5600_RAW_ANGLE_H,2,as5600_buffer+6);
     IIC_Read_nByte_4(AS5600_ADDR,AS5600_RAW_ANGLE_H,2,as5600_buffer+8);
 	IIC_Read_nByte_5(AS5600_ADDR,AS5600_RAW_ANGLE_H,2,as5600_buffer+10);
-	IIC_Read_nByte_5(AS5600_ADDR,AS5600_RAW_ANGLE_H,2,as5600_buffer+12);
-	IIC_Read_nByte_5(AS5600_ADDR,AS5600_RAW_ANGLE_H,2,as5600_buffer+14);
+	IIC_Read_nByte_6(AS5600_ADDR,AS5600_RAW_ANGLE_H,2,as5600_buffer+12);
+	IIC_Read_nByte_7(AS5600_ADDR,AS5600_RAW_ANGLE_H,2,as5600_buffer+14);
 }
 
 /*****************************************

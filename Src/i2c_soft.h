@@ -52,19 +52,19 @@ typedef uint8_t  u8;
 #define SCL_read_5    ANO_GPIO_I2C->IDR  & I2C_Pin_SCL_5
 #define SDA_read_5    ANO_GPIO_I2C->IDR  & I2C_Pin_SDA_5
 
-#define SCL_H_6       ANO_GPIO_I2C->BSRRL = I2C_Pin_SCL_5
-#define SCL_L_6       ANO_GPIO_I2C->BSRRH = I2C_Pin_SCL_5
-#define SDA_H_6       ANO_GPIO_I2C->BSRRL = I2C_Pin_SDA_5
-#define SDA_L_6       ANO_GPIO_I2C->BSRRH = I2C_Pin_SDA_5
-#define SCL_read_6    ANO_GPIO_I2C->IDR  & I2C_Pin_SCL_5
-#define SDA_read_6    ANO_GPIO_I2C->IDR  & I2C_Pin_SDA_5
+#define SCL_H_6       ANO_GPIO_I2C->BSRRL = I2C_Pin_SCL_6
+#define SCL_L_6       ANO_GPIO_I2C->BSRRH = I2C_Pin_SCL_6
+#define SDA_H_6       ANO_GPIO_I2C->BSRRL = I2C_Pin_SDA_6
+#define SDA_L_6       ANO_GPIO_I2C->BSRRH = I2C_Pin_SDA_6
+#define SCL_read_6    ANO_GPIO_I2C->IDR  & I2C_Pin_SCL_6
+#define SDA_read_6    ANO_GPIO_I2C->IDR  & I2C_Pin_SDA_6
 
-#define SCL_H_7       ANO_GPIO_I2C->BSRRL = I2C_Pin_SCL_5
-#define SCL_L_7       ANO_GPIO_I2C->BSRRH = I2C_Pin_SCL_5
-#define SDA_H_7       ANO_GPIO_I2C->BSRRL = I2C_Pin_SDA_5
-#define SDA_L_7       ANO_GPIO_I2C->BSRRH = I2C_Pin_SDA_5
-#define SCL_read_7    ANO_GPIO_I2C->IDR  & I2C_Pin_SCL_5
-#define SDA_read_7    ANO_GPIO_I2C->IDR  & I2C_Pin_SDA_5
+#define SCL_H_7       ANO_GPIO_I2C->BSRRL = I2C_Pin_SCL_7
+#define SCL_L_7       ANO_GPIO_I2C->BSRRH = I2C_Pin_SCL_7
+#define SDA_H_7       ANO_GPIO_I2C->BSRRL = I2C_Pin_SDA_7
+#define SDA_L_7       ANO_GPIO_I2C->BSRRH = I2C_Pin_SDA_7
+#define SCL_read_7    ANO_GPIO_I2C->IDR  & I2C_Pin_SCL_7
+#define SDA_read_7    ANO_GPIO_I2C->IDR  & I2C_Pin_SDA_7
 /***************I2C GPIO∂®“Â******************/
 #define ANO_GPIO_I2C	GPIOD
 #define ANO_GPIO_I2C_1  GPIOC

@@ -37,7 +37,7 @@
 #include "cmsis_os.h"
 
 /* USER CODE BEGIN 0 */
-
+extern osMessageQId msgInQueueHandle;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -89,15 +89,27 @@ void TIM3_IRQHandler(void)
 /**
 * @brief This function handles USART1 global interrupt.
 */
-//void USART1_IRQHandler(void)
-//{
-//  /* USER CODE BEGIN USART1_IRQn 0 */
-////	
-//  /* USER CODE END USART1_IRQn 0 */
-//  HAL_UART_IRQHandler(&huart1);
-//  /* USER CODE BEGIN USART1_IRQn 1 */
-//  /* USER CODE END USART1_IRQn 1 */
-//}
+void USART1_IRQHandler(void)
+{
+ /* USER CODE BEGIN USART1_IRQn 0 */
+	uint8_t com_data;
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+	UBaseType_t uxSavedInterruptStatus;
+	if(__HAL_UART_GET_FLAG(&huart1, UART_FLAG_RXNE))
+	{
+		__HAL_UART_CLEAR_FLAG(&huart1, UART_FLAG_RXNE);
+		com_data= huart1.Instance->DR;
+		xQueueSendToFrontFromISR(msgInQueueHandle,
+												(void*)&com_data,
+													&xHigherPriorityTaskWoken);	
+	}
+  /* USER CODE END USART1_IRQn 0 */
+	HAL_UART_IRQHandler(&huart1);
+	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	
+  /* USER CODE BEGIN USART1_IRQn 1 */
+  /* USER CODE END USART1_IRQn 1 */
+}
 
 /**
 * @brief This function handles DMA2 Stream7 global interrupt.
