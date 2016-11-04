@@ -522,7 +522,7 @@ MAVLINK_HELPER uint8_t mavlink_frame_char(uint8_t chan, uint8_t c, mavlink_messa
 MAVLINK_HELPER uint8_t mavlink_parse_char(uint8_t chan, uint8_t c, mavlink_message_t* r_message, mavlink_status_t* r_mavlink_status)
 {
     uint8_t msg_received = mavlink_frame_char(chan, c, r_message, r_mavlink_status);
-    if (msg_received == MAVLINK_FRAMING_BAD_CRC) {
+    if (msg_received >= MAVLINK_FRAMING_BAD_CRC) {
 	    // we got a bad CRC. Treat as a parse failure
 	    mavlink_message_t* rxmsg = mavlink_get_channel_buffer(chan);
 	    mavlink_status_t* status = mavlink_get_channel_status(chan);
