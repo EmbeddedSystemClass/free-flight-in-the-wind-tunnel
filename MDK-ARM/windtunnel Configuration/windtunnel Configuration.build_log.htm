@@ -21,21 +21,33 @@ Target DLL:      Segger\JL2CM3.dll V2.99.13.0
 Dialog DLL:      TCM.DLL V1.14.4.0
  
 <h2>Project:</h2>
-C:\Users\think\Desktop\stm32F407cube\windtunnel\MDK-ARM\windtunnel.uvprojx
-Project File Date:  10/31/2016
+C:\Users\think\Desktop\gz\fd\free-flight-in-the-wind-tunnel\MDK-ARM\windtunnel.uvprojx
+Project File Date:  11/02/2016
 
 <h2>Output:</h2>
 Build target 'windtunnel Configuration'
-compiling mavlink_task.c...
-..\Src\mavlink_task.c(48): warning:  #177-D: variable "data" was declared but never referenced
-        uint8_t data=0;
-..\Src\mavlink_task.c: 1 warning, 0 errors
+compiling freertos.c...
+..\Src\freertos.c(108): warning:  #188-D: enumerated type mixed with another type
+        osThreadDef(AS5600_Thread1,AS5600Thread,0,0,512);
+..\Src\freertos.c(111): warning:  #188-D: enumerated type mixed with another type
+        osThreadDef(StartSampleThread,StartSampleThread,1,0,512);
+..\Src\freertos.c(114): warning:  #188-D: enumerated type mixed with another type
+        osThreadDef(Data_Receive_Thread3,DataReceiveThread,3,0,512);
+..\Src\freertos.c(117): warning:  #188-D: enumerated type mixed with another type
+        osThreadDef(StartMsgSendThread, StartMsgSendThread,2, 0, 128);
+..\Src\freertos.c(83): warning:  #177-D: variable "Hall" was declared but never referenced
+      uint16_t Hall[4];
+..\Src\freertos.c(84): warning:  #177-D: variable "data" was declared but never referenced
+        uint8_t data;
+..\Src\freertos.c(203): warning:  #177-D: variable "uxSavedInterruptStatus" was declared but never referenced
+        UBaseType_t uxSavedInterruptStatus;
+..\Src\freertos.c: 7 warnings, 0 errors
 linking...
-Program Size: Code=25952 RO-data=896 RW-data=184 ZI-data=18736  
-"windtunnel Configuration\windtunnel Configuration.axf" - 0 Error(s), 1 Warning(s).
+Program Size: Code=25984 RO-data=896 RW-data=184 ZI-data=18752  
+"windtunnel Configuration\windtunnel Configuration.axf" - 0 Error(s), 7 Warning(s).
 
 <h2>Collection of Component include folders:</h2>
-  C:\Users\think\Desktop\stm32F407cube\windtunnel\MDK-ARM\RTE
+  C:\Users\think\Desktop\gz\fd\free-flight-in-the-wind-tunnel\MDK-ARM\RTE
   D:\MDK\ARM\PACK\Keil\STM32F4xx_DFP\1.0.8\Device\Include
 
 <h2>Collection of Component Files used:</h2>
