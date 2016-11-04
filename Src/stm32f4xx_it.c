@@ -89,6 +89,9 @@ void TIM3_IRQHandler(void)
 /**
 * @brief This function handles USART1 global interrupt.
 */
+uint8_t buff[4];
+uint8_t buff_idx=0;
+
 void USART1_IRQHandler(void)
 {
  /* USER CODE BEGIN USART1_IRQn 0 */
@@ -99,9 +102,13 @@ void USART1_IRQHandler(void)
 	{
 		__HAL_UART_CLEAR_FLAG(&huart1, UART_FLAG_RXNE);
 		com_data= huart1.Instance->DR;
-		xQueueSendToFrontFromISR(msgInQueueHandle,
-												(void*)&com_data,
-													&xHigherPriorityTaskWoken);	
+		buff[buff_idx++] = com_data;
+		if (buff_idx == 4)
+		{
+			buff_idx = 0;
+		    xQueueSendToFrontFromISR(msgInQueueHandle,
+				(void*)buff, &xHigherPriorityTaskWoken);	
+		}
 	}
   /* USER CODE END USART1_IRQn 0 */
 	HAL_UART_IRQHandler(&huart1);

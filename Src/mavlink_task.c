@@ -24,6 +24,11 @@ extern QueueHandle_t msgQueueAngle ;
 extern QueueHandle_t msgQueueRpm ;
 
 extern EventGroupHandle_t xCreatedEventGroup ;
+extern uint16_t Motor_RPM_1[4];
+extern uint16_t Angle[8];
+
+void vToggleRedLED(void);
+void vToggleGreenLED(void);
 /* Variables -----------------------------------------------------------------*/
 
 /* Function implements -------------------------------------------------------*/
@@ -43,50 +48,31 @@ void SetPwm(mavlink_pwms_t pwms)
 
 void StartSampleThread(void const * argument)
 {
-	uint16_t Hall[4]={0,0,0,0};
-	uint16_t Angle[8]={0,0,0,0,0,0,0,0};
 	uint8_t data=0;
 	EventBits_t uxBits;
 	TickType_t xLastWakeTime;
-	const TickType_t xFrequency = 100;	
-	const TickType_t xTicksToWait = 20 / portTICK_PERIOD_MS;
-	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(10); /* 设置最大等待时间为100ms */
+	const TickType_t xFrequency = 10;	
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS(5); /* 设置最大等待时间为10ms */
 	xLastWakeTime = xTaskGetTickCount();
-	for(;;)
+	for(;;) 
 	{
 		uxBits=xEventGroupWaitBits(xCreatedEventGroup, /* 事件标志组句柄 */
 							         BIT_ALL,            /* 等待bit0和bit1被设置 */
 							         pdTRUE,             /* 退出前bit0和bit1被清除 */
 							         pdTRUE,             /* 设置为pdTRUE表示等待bit1和bit0都被设置*/
-							         xTicksToWait); 	 /* 等待延迟时间 */
+							         (TickType_t)0); 	 /* 等待延迟时间 */
 		if((uxBits & BIT_ALL) == BIT_ALL)
-		{
-			//printf("接收到数据\r\n");
-		
-			xQueueReceive( msgQueueAngle,                   /* 消息队列句柄 */
-		               (void *)Angle,  		   /* 这里获取的是结构体的地址 */
-		               (TickType_t)xMaxBlockTime);/* 设置阻塞时间 */
-		
-			xQueueReceive( msgQueueRpm,                   /* 消息队列句柄 */
-		               (void *)Hall,  		   /* 这里获取的是结构体的地址 */
-		               (TickType_t)xMaxBlockTime);/* 设置阻塞时间 */
-		
-				
-			mavlink_msg_sensors_send(MAVLINK_COMM_0, Angle,Hall);
-			//printf("Angle={[%d,%d,%d,%d,%d,%d,%d,%d]}\r\n",Angle[0],Angle[1],Angle[2],Angle[3],Angle[4],Angle[5],Angle[6],Angle[7]);
-			//printf("Hall={%d,%d,%d,%d}\r\n",Hall[0],Hall[1],Hall[2],Hall[3]);
+		{	
+			mavlink_msg_sensors_send(MAVLINK_COMM_0, Angle,Motor_RPM_1);	
+		//	printf("Angle={[%d,%d,%d,%d,%d,%d,%d,%d]}\r\n",Angle[0],Angle[1],Angle[2],Angle[3],Angle[4],Angle[5],Angle[6],Angle[7]);
+		//	printf("Hall={%d,%d,%d,%d}\r\n",Motor_RPM_1[0],Motor_RPM_1[1],Motor_RPM_1[2],Motor_RPM_1[3]);
 		}
-		else if (uxBits == BIT_1)
-		{
-			mavlink_msg_sensors_send(MAVLINK_COMM_0, Angle,Hall);
-		}
+		
 		else 
 		{
-			xQueueReceive( msgQueueAngle,                   /* 消息队列句柄 */
-		               (void *)Angle,  		   /* 这里获取的是结构体的地址 */
-		               (TickType_t)xMaxBlockTime);/* 设置阻塞时间 */
-			//printf("Angle={[%d,%d,%d,%d,%d,%d,%d,%d]}\r\n",Angle[0],Angle[1],Angle[2],Angle[3],Angle[4],Angle[5],Angle[6],Angle[7]);
-			mavlink_msg_sensors_send(MAVLINK_COMM_0, Angle,Hall);
+		//	printf("Angle={[%d,%d,%d,%d,%d,%d,%d,%d]}\r\n",Angle[0],Angle[1],Angle[2],Angle[3],Angle[4],Angle[5],Angle[6],Angle[7]);
+			mavlink_msg_sensors_send(MAVLINK_COMM_0, Angle,Motor_RPM_1);
+			vTaskDelay(1);
 		}
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);
 	}
@@ -94,35 +80,49 @@ void StartSampleThread(void const * argument)
 
 void DataReceiveThread(void const * argument)
 {
-	uint8_t data=0;
+	uint8_t data[4];
 	mavlink_message_t msg;
 	mavlink_status_t status;
 	mavlink_pwms_t pwms;
 	for(;;)
-	{
+	{ 
 		if(xQueueReceive( msgInQueueHandle,                   /* 消息队列句柄 */
-		               (void *)&data,  		   /* 这里获取的是结构体的地址 */
+		               (void *)data,  		   /* 这里获取的是结构体的地址 */
 		               (TickType_t)-1))/* 设置阻塞时间 */
 		{
-			if (mavlink_parse_char(MAVLINK_COMM_0,data, &msg, &status))
+			for (int i=0;i<4;++i)
 			{
-				switch (msg.msgid)
+				vToggleRedLED();
+				if (mavlink_parse_char(MAVLINK_COMM_0,data[i], &msg, &status))
 				{
-					case 1:
+				vToggleGreenLED();
+					switch (msg.msgid)
 					{
-					}
-						break;
-					case 2:
-					{
-						mavlink_msg_pwms_decode(&msg, &pwms);
-						SetPwm(pwms);
-					}
-						break;
-					default:
-						break;
+						case 1:
+						{
+						}
+							break;
+						case 2:
+						{
+							mavlink_msg_pwms_decode(&msg, &pwms);
+							SetPwm(pwms);
+						}
+							break;
+						default:
+							break;
+					} 
 				}
-		    }
+			}
 	     }			   
 	 }		
 }
 
+void vToggleRedLED(void)
+{
+  HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_2);
+}
+
+void vToggleGreenLED(void)
+{
+  HAL_GPIO_TogglePin(GPIOE, GPIO_PIN_3);
+}

@@ -54,6 +54,9 @@ EventGroupHandle_t xCreatedEventGroup = NULL;
 
 uint8_t pingpang[256];
 uint8_t pingpang_idx;
+uint16_t Motor_RPM_1[4];
+uint16_t Angle[8];
+ 
 /* USER CODE END Variables */
 
 /* Function prototypes -------------------------------------------------------*/
@@ -66,6 +69,8 @@ void AS5600Thread(void const * argument);
 void StartSampleThread(void const * argument);
 void DataReceiveThread(void const * argument);
 void StartMsgSendThread(void const * argument);
+
+
 /* USER CODE END FunctionPrototypes */
 
 /* Hook prototypes */
@@ -74,7 +79,7 @@ void StartMsgSendThread(void const * argument);
 
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
-    uint16_t Angle[8];
+
     uint16_t Hall[4];
 	uint8_t data;
   /* USER CODE END Init */
@@ -100,37 +105,26 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-	osThreadDef(AS5600_Thread1,AS5600Thread,1,0,512);
+	osThreadDef(AS5600_Thread1,AS5600Thread,0,0,512);
 	osThreadCreate(osThread(AS5600_Thread1),NULL);
 
-	osThreadDef(StartSampleThread,StartSampleThread,2,0,512);
+	osThreadDef(StartSampleThread,StartSampleThread,1,0,512);
 	osThreadCreate(osThread(StartSampleThread),NULL);
 
-	osThreadDef(Data_Receive_Thread3,DataReceiveThread,1,0,512);
+	osThreadDef(Data_Receive_Thread3,DataReceiveThread,3,0,512);
 	osThreadCreate(osThread(Data_Receive_Thread3),NULL);
 
-	osThreadDef(StartMsgSendThread, StartMsgSendThread, osPriorityBelowNormal, 0, 128);
+	osThreadDef(StartMsgSendThread, StartMsgSendThread,2, 0, 128);
 	osThreadCreate(osThread(StartMsgSendThread), NULL);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
-//	osMessageQDef(Queue1,1,Angle);
-//	msgQueueAngle=osMessageCreate(osMessageQ(Queue1),NULL);
-	
-	msgQueueAngle= xQueueCreate(1,sizeof(Angle));
-	
-//	osMessageQDef(Queue2,1,Hall);
-//	msgQueueRpm=osMessageCreate(osMessageQ(Queue2),NULL);
-	
-	msgQueueRpm= xQueueCreate(1,sizeof(Hall));
-	
-	osMessageQDef(Queue3,256,uint8_t);
+
+	osMessageQDef(Queue3,128,uint8_t[4]);
 	msgInQueueHandle=osMessageCreate(osMessageQ(Queue3),NULL);
    
-//   osMessageQDef(Queue4, 256, uint8_t);
-//   xQueue4 = osMessageCreate(osMessageQ(Queue4), NULL);
-    xCreatedEventGroup = xEventGroupCreate();
+   xCreatedEventGroup = xEventGroupCreate();
   /* USER CODE END RTOS_QUEUES */
 }
 
@@ -153,30 +147,29 @@ void AS5600Thread(void const * argument)
 {
 	
 	TickType_t xLastWakeTime;
-	const TickType_t xFrequency = 20;	
-	uint16_t Angle[8]={0};
+	const TickType_t xFrequency = 10;	
+	//TickType_t count;
+	//TickType_t count_1;
 	xLastWakeTime = xTaskGetTickCount();
 	for(;;)
 	{
-		vTaskSuspendAll();
-		taskENTER_CRITICAL();
+		//vTaskSuspendAll();
+		//taskENTER_CRITICAL();
+		//count = xTaskGetTickCount();
 		AS5600_DaTa_Angle(Angle);
-		taskEXIT_CRITICAL();
-		xTaskResumeAll();
+		//count_1 = xTaskGetTickCount();
+		//printf("{%d,%d}",count,count_1);
+		//taskEXIT_CRITICAL();
+		//xTaskResumeAll();
 	    xEventGroupSetBits( xCreatedEventGroup, /* 事件标志组句柄 */
 														BIT_0 );           /* 设置bit0 */	
-		xQueueSend(msgQueueAngle,
-								   (void *) Angle,
-								   (TickType_t)10);
-		
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);
-	}
+	} 
 }
 
 
 void StartMsgSendThread(void const * argument)
 {
-
 	uint8_t s;
 	/* Infinite loop */
 	for(;;)
@@ -208,7 +201,6 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	UBaseType_t uxSavedInterruptStatus;
-	static uint16_t Motor_RPM_1[4];
 	static uint16_t value[4];
 	static uint8_t   flag=0,flag_1=0,flag_2=0,flag_3=0;
 	static uint16_t temp_cnt1,temp_cnt1_2,temp_cnt2,temp_cnt2_2,temp_cnt3,temp_cnt3_2,temp_cnt4,temp_cnt4_2;
@@ -226,7 +218,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 				value[0] = (temp_cnt1_2-temp_cnt1);
 			else 
 				value[0] = (0xffff-temp_cnt1+temp_cnt1_2+1);
-			if(3000<value[0]<65536)
+			if(1000<value[0])
 			{
 				Motor_RPM_1[0]=60000000/value[0];
 			}
@@ -251,7 +243,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 			if(temp_cnt2_2>=temp_cnt2)
 				value[1] =( temp_cnt2_2-temp_cnt2 );
 			else value[1] = (0xffff-temp_cnt2+temp_cnt2_2+1);
-			if(3000<value[1]<65536)
+			if(1000<value[1])
 			Motor_RPM_1[1]=60000000/value[1];
 			else
 			Motor_RPM_1[1]=0;	
@@ -272,7 +264,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 			if(temp_cnt3_2>=temp_cnt3)
 				value[2] = (temp_cnt3_2-temp_cnt3);
 			else value[2] = (0xffff-temp_cnt3+temp_cnt3_2+1);	
-			if(3000<value[2]<65536)
+			if(1000<value[2])
 				Motor_RPM_1[2]=60000000/value[2];
 			else Motor_RPM_1[2]=0;	
 			flag_2=0;
@@ -292,7 +284,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 			if(temp_cnt4_2 >= temp_cnt4)
 				value[3] = (temp_cnt4_2 - temp_cnt4);
 			else value[3] =( 0xffff - temp_cnt4 + temp_cnt4_2 + 1);
-			if(3000 < value[3] < 65536)
+			if(1000 < value[3])
 				Motor_RPM_1[3]=60000000 / value[3];
 			else Motor_RPM_1[3]=0;	
 			flag_3=0;
@@ -304,9 +296,6 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 														BIT_1 ,             /* 设置bit1 */
 														&xHigherPriorityTaskWoken );
 	
-	xQueueSendToFrontFromISR(msgQueueRpm,
-											(void*)Motor_RPM_1,
-												&xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 	
 }
@@ -335,6 +324,9 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 		osSemaphoreRelease(msgOutBinarySemHandle);
 	}
 }
+
+ 
+
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
