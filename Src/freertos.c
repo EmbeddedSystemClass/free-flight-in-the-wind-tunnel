@@ -56,7 +56,11 @@ uint8_t pingpang[256];
 uint8_t pingpang_idx;
 uint16_t Motor_RPM_1[4];
 uint16_t Angle[8];
- 
+uint16_t flag_updata;
+uint16_t flag_updata_1;
+uint16_t flag_updata_2;
+uint16_t flag_updata_3;
+uint16_t data;
 /* USER CODE END Variables */
 
 /* Function prototypes -------------------------------------------------------*/
@@ -201,31 +205,31 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
 	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 	UBaseType_t uxSavedInterruptStatus;
-	static uint16_t value[4];
+	static uint32_t value[4];
 	static uint8_t   flag=0,flag_1=0,flag_2=0,flag_3=0;
 	static uint16_t temp_cnt1,temp_cnt1_2,temp_cnt2,temp_cnt2_2,temp_cnt3,temp_cnt3_2,temp_cnt4,temp_cnt4_2;
 	if(__HAL_TIM_GET_FLAG(htim, TIM_FLAG_CC1) != RESET)
 	{
 		if(flag==0)
 		{
+			flag_updata =0;
 			temp_cnt1 = TIM3->CCR1;
 			flag=1;
 		}
 		else
 		{
 			temp_cnt1_2 = TIM3->CCR1;
-			if(temp_cnt1_2>=temp_cnt1)
-				value[0] = (temp_cnt1_2-temp_cnt1);
-			else 
-				value[0] = (0xffff-temp_cnt1+temp_cnt1_2+1);
-			if(1000<value[0])
+			if( flag_updata == 0 && temp_cnt1_2>=temp_cnt1)
 			{
-				Motor_RPM_1[0]=60000000/value[0];
+				value[0] = (temp_cnt1_2-temp_cnt1);
 			}
 			else
 			{
-				Motor_RPM_1[0]=0;
+				value[0] = (0xffff-temp_cnt1+temp_cnt1_2+1)+ (0xffff + 1) * (flag_updata-1);
+				data = flag_updata;
 			}
+			Motor_RPM_1[0]=60000000/value[0];
+			flag_updata = 0;
 			flag=0;
 		}
 		__HAL_TIM_CLEAR_IT(htim, TIM_IT_CC1);
@@ -234,19 +238,22 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 	{
 		if(flag_1==0)
 		{
+			flag_updata_1 = 0;
 			temp_cnt2 = TIM3->CCR2;
 			flag_1=1;
 		}
 		else
 		{
 			temp_cnt2_2 = TIM3->CCR2;
-			if(temp_cnt2_2>=temp_cnt2)
+			if( flag_updata_1 == 0 )
+			{
 				value[1] =( temp_cnt2_2-temp_cnt2 );
-			else value[1] = (0xffff-temp_cnt2+temp_cnt2_2+1);
-			if(1000<value[1])
+			}
+			else 
+			{
+				value[1] = (0xffff-temp_cnt2+temp_cnt2_2+1) +(0xffff + 1) * (flag_updata_1-1);
+			}	
 			Motor_RPM_1[1]=60000000/value[1];
-			else
-			Motor_RPM_1[1]=0;	
 			flag_1=0;
 		}
 		__HAL_TIM_CLEAR_IT(htim, TIM_IT_CC2);
@@ -255,18 +262,18 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 	{
 		if(flag_2==0)
 		{
+			flag_updata_2 = 0;
 			temp_cnt3 = TIM3->CCR3;
 			flag_2=1;
 		}
 		else
 		{
 			temp_cnt3_2 = TIM3->CCR3;
-			if(temp_cnt3_2>=temp_cnt3)
+			if( flag_updata_2 == 0)
 				value[2] = (temp_cnt3_2-temp_cnt3);
-			else value[2] = (0xffff-temp_cnt3+temp_cnt3_2+1);	
-			if(1000<value[2])
-				Motor_RPM_1[2]=60000000/value[2];
-			else Motor_RPM_1[2]=0;	
+			else 
+				value[2] = (0xffff-temp_cnt3+temp_cnt3_2+1) + (0xffff + 1) * (flag_updata_2-1);	
+			Motor_RPM_1[2]=60000000/value[2];
 			flag_2=0;
 		}
 		__HAL_TIM_CLEAR_IT(htim, TIM_IT_CC3);
@@ -275,18 +282,19 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 	{
 		if(flag_3==0)
 		{
+			flag_updata_3 = 0;
 			temp_cnt4 = TIM3->CCR4;
 			flag_3=1;
 		}
 		else
 		{
 			temp_cnt4_2 = TIM3->CCR4;
-			if(temp_cnt4_2 >= temp_cnt4)
+			if(flag_updata_3 == 0)
 				value[3] = (temp_cnt4_2 - temp_cnt4);
-			else value[3] =( 0xffff - temp_cnt4 + temp_cnt4_2 + 1);
-			if(1000 < value[3])
-				Motor_RPM_1[3]=60000000 / value[3];
-			else Motor_RPM_1[3]=0;	
+			else 
+				value[3] =( 0xffff - temp_cnt4 + temp_cnt4_2 + 1) +(0xffff + 1) * (flag_updata_3-1);		
+			Motor_RPM_1[3]=60000000 / value[3];
+			
 			flag_3=0;
 		}
 		__HAL_TIM_CLEAR_IT(htim, TIM_IT_CC4);
@@ -325,7 +333,13 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 	}
 }
 
- 
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	flag_updata++;
+	flag_updata_1++;
+	flag_updata_2++;
+	flag_updata_3++;
+}
 
 /* USER CODE END Application */
 

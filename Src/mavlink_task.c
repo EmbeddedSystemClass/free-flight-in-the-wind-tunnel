@@ -64,8 +64,8 @@ void StartSampleThread(void const * argument)
 		if((uxBits & BIT_ALL) == BIT_ALL)
 		{	
 			mavlink_msg_sensors_send(MAVLINK_COMM_0, Angle,Motor_RPM_1);	
-		//	printf("Angle={[%d,%d,%d,%d,%d,%d,%d,%d]}\r\n",Angle[0],Angle[1],Angle[2],Angle[3],Angle[4],Angle[5],Angle[6],Angle[7]);
-		//	printf("Hall={%d,%d,%d,%d}\r\n",Motor_RPM_1[0],Motor_RPM_1[1],Motor_RPM_1[2],Motor_RPM_1[3]);
+			//printf("Angle={[%d,%d,%d,%d,%d,%d,%d,%d]}\r\n",Angle[0],Angle[1],Angle[2],Angle[3],Angle[4],Angle[5],Angle[6],Angle[7]);
+			//printf("Hall={%d,%d,%d,%d}\r\n",Motor_RPM_1[0],Motor_RPM_1[1],Motor_RPM_1[2],Motor_RPM_1[3]);
 		}
 		
 		else 

@@ -39,8 +39,8 @@
 
 /* USER CODE BEGIN 0 */
 
-#define PWM_HZ   50
-#define ACCUARCY 20000                                             //预装载值 
+#define PWM_HZ   400
+#define ACCUARCY 2500                                             //预装载值 
 #define PRV_1 (uint16_t)((SystemCoreClock/2)/(PWM_HZ*ACCUARCY))-1   //预分频系数  Tim5
 #define PRV_2 (uint16_t)((SystemCoreClock)/(PWM_HZ*ACCUARCY))-1      //预分频系数  Tim1 Tim8
 // HZ= 计数频率/（预装载值+1）
